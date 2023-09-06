@@ -75,7 +75,7 @@ def evaluate(
 
 def main():
 
-    parser = argparse.ArgumentParser(description="train a nhits and nbeats model on a dataset")
+    parser = argparse.ArgumentParser(description="train sota models on a dataset")
     parser.add_argument(
         "--model_dir_tag",
         type=str,
@@ -85,11 +85,11 @@ def main():
     parser.add_argument(
         "--dataset_name",
         type=str,
-        help="name of the dataset to use in the dir /nhits/data",
+        help="name of the dataset to use in the dir /model/data",
         required=True,
     )
     parser.add_argument(
-        "--horizon", type=int, help="forecast horizon of the nhits/nbeats model", default=52,
+        "--horizon", type=int, help="forecast horizon of the sota models", default=52,
     )
     parser.add_argument(
         "--max_steps",
@@ -122,10 +122,10 @@ def main():
     gpu = args.gpu
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     model_dir_tag = args.model_dir_tag
-    model_folder = os.path.join("/nhits/result/", model_dir_tag + "_" + str(seed))
+    model_folder = os.path.join("/model/result/", model_dir_tag + "_" + str(seed))
     if not os.path.exists(model_folder):
         os.makedirs(model_folder)
-    dataset_path = os.path.join("/nhits/data", args.dataset_name)
+    dataset_path = os.path.join("/model/data", args.dataset_name)
     dataset = pd.read_csv(dataset_path, index_col=0)
     horizon = args.horizon
     max_steps = args.max_steps

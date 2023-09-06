@@ -75,7 +75,7 @@ def evaluate(
 
 def main():
 
-    parser = argparse.ArgumentParser(description="run a grid searcch for the nhits and nbeats models")
+    parser = argparse.ArgumentParser(description="run a grid searcch for sota models")
     parser.add_argument(
         "--model_dir_tag",
         type=str,
@@ -85,11 +85,11 @@ def main():
     parser.add_argument(
         "--dataset_name",
         type=str,
-        help="name of the dataset to use in the dir /nhits/data",
+        help="name of the dataset to use in the dir /model/data",
         required=True,
     )
     parser.add_argument(
-        "--horizon", type=int, help="forecast horizon of the nhits/nbeats model", default=52,
+        "--horizon", type=int, help="forecast horizon of the sota models", default=52,
     )
     parser.add_argument(
         "--max_steps",
@@ -105,7 +105,7 @@ def main():
     gpu = args.gpu
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     model_dir_tag = args.model_dir_tag
-    dataset_path = os.path.join("/nhits/data", args.dataset_name)
+    dataset_path = os.path.join("/model/data", args.dataset_name)
     dataset = pd.read_csv(dataset_path, index_col=0)
     horizon = args.horizon
     max_steps = args.max_steps
@@ -118,7 +118,7 @@ def main():
     for learning_rate in [0.005, 0.0005, 0.00005]:
         for batch_size in [8,64,256,1024, 2048]:
             model_folder = os.path.join(
-                "/nhits/result/",
+                "/model/result/",
                 model_dir_tag + "_" + str(learning_rate) + "_" + str(batch_size),
             )
             if not os.path.exists(model_folder):
