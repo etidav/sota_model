@@ -89,6 +89,9 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "--model_name_list", nargs="+", type=str, help="", default='nhits'
+    )
+    parser.add_argument(
         "--horizon", type=int, help="forecast horizon of the sota models", default=52,
     )
     parser.add_argument(
@@ -107,6 +110,9 @@ def main():
     model_dir_tag = args.model_dir_tag
     dataset_path = os.path.join("/model/data", args.dataset_name)
     dataset = pd.read_csv(dataset_path, index_col=0)
+    model_name_list = args.model_name_list
+    if type(model_name_list) != list:
+        model_name_list = [model_name_list]
     horizon = args.horizon
     max_steps = args.max_steps
 
@@ -117,41 +123,54 @@ def main():
 
     for learning_rate in [0.005, 0.0005, 0.00005]:
         for batch_size in [8,64,256,1024, 2048]:
-            model_folder = os.path.join(
+            for seed in range(3):
+                model_folder = os.path.join(
                 "/model/result/",
-                model_dir_tag + "_" + str(learning_rate) + "_" + str(batch_size),
-            )
-            if not os.path.exists(model_folder):
-                os.makedirs(model_folder)
-            for seed in range(1):
+                model_dir_tag + "_" + str(learning_rate) + "_" + str(batch_size)+ "_" + str(seed),
+                )
+                if not os.path.exists(model_folder):
+                    os.makedirs(model_folder)
                 torch.manual_seed(seed)
                 np.random.seed(seed)
-                models = [
-                    NBEATS(
-                        input_size=2 * horizon,
-                        h=horizon,
-                        max_steps=max_steps,
-                        learning_rate=learning_rate,
-                        batch_size=batch_size,
-                        random_seed=seed,
-                    ),
-                    NHITS(
-                        input_size=2 * horizon,
-                        h=horizon,
-                        max_steps=max_steps,
-                        learning_rate=learning_rate,
-                        batch_size=batch_size,
-                        random_seed=seed,
-                    ),
-                    PatchTST(
-                        input_size=2 * horizon,
-                        h=horizon,
-                        max_steps=max_steps,
-                        learning_rate=learning_rate,
-                        batch_size=batch_size,
-                        random_seed=seed,
-                    )
-                ]
+                models = []
+                for model_name in model_name_list:
+                    if model_name.lower() == 'nhits':
+                        models.append(
+                            NHITS(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    elif model_name.lower() == 'nbeats':
+                        models.append(
+                            NBEATS(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    elif model_name.lower() == 'patchtst':
+                        models.append(
+                            PatchTST(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    else:
+                        raise ValueError(
+                            f"model_name {model_name} is not recognized. model recognized: ['nhits', 'nbeats', 'patchtst']"
+                        )
                 nforecast = NeuralForecast(models=models, freq="W")
                 nforecast.fit(df=y_train)
                 y_pred_df = nforecast.predict().reset_index()
@@ -170,12 +189,12 @@ def main():
                         columns=dataset.columns,
                         index=dataset.index[-horizon:],
                     )
-                    model_prediction.to_csv(os.path.join(model_folder, f"{model_name.lower()}_prediction_seed{seed}.csv"))
+                    model_prediction.to_csv(os.path.join(model_folder, f"{model_name.lower()}_prediction.csv"))
 
                     model_eval = evaluate(
                         ground_truth=dataset, prediction=model_prediction, metrics=["mase"], season=52
                     )
-                    write_json(model_eval, os.path.join(model_folder, f"{model_name.lower()}_results_seed{seed}.json"))
+                    write_json(model_eval, os.path.join(model_folder, f"{model_name.lower()}_results.json"))
 
 
 if __name__ == "__main__":
