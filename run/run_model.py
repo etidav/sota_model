@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from neuralforecast import NeuralForecast
-from neuralforecast.models import NBEATS, NHITS, PatchTST
+from neuralforecast.models import NBEATS, NHITS, PatchTST, DeepAR
 from utils.utils import write_json
 import torch
 
@@ -164,6 +164,17 @@ def main():
                     random_seed=seed,
                 )
             )
+        elif model_name.lower() == 'nbeats':
+            models.append(
+                DeepAR(
+                    input_size=2 * horizon,
+                    h=horizon,
+                    max_steps=max_steps,
+                    learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    random_seed=seed,
+                )
+            )
         elif model_name.lower() == 'patchtst':
             models.append(
                 PatchTST(
@@ -183,7 +194,8 @@ def main():
     nforecast = NeuralForecast(models=models, freq="W")
     nforecast.fit(df=y_train)
     nforecast.save(path=os.path.join(model_folder, "model_save"))
-    y_pred_df = nforecast.predict().reset_index()
+    nforecast_load = NeuralForecast.load(os.path.join(model_folder, "model_save"))
+    y_pred_df = nforecast_load.predict(y_train)
     for model_name in y_pred_df:
         if model_name in ['unique_id', 'ds']:
             continue
