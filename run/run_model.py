@@ -164,7 +164,7 @@ def main():
                     random_seed=seed,
                 )
             )
-        elif model_name.lower() == 'nbeats':
+        elif model_name.lower() == 'deepar':
             models.append(
                 DeepAR(
                     input_size=2 * horizon,
