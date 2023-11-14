@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from neuralforecast import NeuralForecast
-from neuralforecast.models import NBEATS, NHITS, PatchTST
+from neuralforecast.models import NBEATS, NHITS, PatchTST, DeepAR, TimesNet, FEDformer, Autoformer, Informer
 from utils.utils import write_json
 import torch
 
@@ -159,6 +159,50 @@ def main():
                     elif model_name.lower() == 'patchtst':
                         models.append(
                             PatchTST(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    elif model_name.lower() == 'timesnet':
+                        models.append(
+                            TimesNet(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    elif model_name.lower() == 'fedformer':
+                        models.append(
+                            FEDformer(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    elif model_name.lower() == 'autoformer':
+                        models.append(
+                            Autoformer(
+                                input_size=2 * horizon,
+                                h=horizon,
+                                max_steps=max_steps,
+                                learning_rate=learning_rate,
+                                batch_size=batch_size,
+                                random_seed=seed,
+                            )
+                        )
+                    elif model_name.lower() == 'informer':
+                        models.append(
+                            Informer(
                                 input_size=2 * horizon,
                                 h=horizon,
                                 max_steps=max_steps,
