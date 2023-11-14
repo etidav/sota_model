@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from neuralforecast import NeuralForecast
-from neuralforecast.models import NBEATS, NHITS, PatchTST, DeepAR
+from neuralforecast.models import NBEATS, NHITS, PatchTST, DeepAR, TimesNet, FEDformer, Autoformer, Informer
 from utils.utils import write_json
 import torch
 
@@ -186,6 +186,50 @@ def main():
                     random_seed=seed,
                 )
             )
+        elif model_name.lower() == 'timesnet':
+            models.append(
+                TimesNet(
+                    input_size=2 * horizon,
+                    h=horizon,
+                    max_steps=max_steps,
+                    learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    random_seed=seed,
+                )
+            )
+        elif model_name.lower() == 'fedformer':
+            models.append(
+                FEDformer(
+                    input_size=2 * horizon,
+                    h=horizon,
+                    max_steps=max_steps,
+                    learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    random_seed=seed,
+                )
+            )
+        elif model_name.lower() == 'autoformer':
+            models.append(
+                Autoformer(
+                    input_size=2 * horizon,
+                    h=horizon,
+                    max_steps=max_steps,
+                    learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    random_seed=seed,
+                )
+            )
+        elif model_name.lower() == 'informer':
+            models.append(
+                Informer(
+                    input_size=2 * horizon,
+                    h=horizon,
+                    max_steps=max_steps,
+                    learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    random_seed=seed,
+                )
+            )
         else:
             raise ValueError(
                 f"model_name {model_name} is not recognized. model recognized: ['nhits', 'nbeats', 'patchtst']"
@@ -193,7 +237,12 @@ def main():
             
     nforecast = NeuralForecast(models=models, freq="W")
     nforecast.fit(df=y_train)
-    nforecast.save(path=os.path.join(model_folder, "model_save"))
+    model_save_path = os.path.join(model_folder, "model_save")
+    nforecast.save(path=model_save_path)
+    if model_name.lower() in ['timesnet', 'fedformer']:
+        model_ckpt = [i for i in os.listdir(model_save_path) if 'ckpt' in i][0]
+        new_model_ckpt = model_ckpt.replace(f'{model_name.lower()}',f'auto{model_name.lower()}')
+        os.rename(os.path.join(model_save_path,model_ckpt), os.path.join(model_save_path,new_model_ckpt))
     nforecast_load = NeuralForecast.load(os.path.join(model_folder, "model_save"))
     y_pred_df = nforecast_load.predict(y_train)
     for model_name in y_pred_df:

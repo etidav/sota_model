@@ -1,2 +1,4 @@
 neuralforecast==1.6.4
+torch==2.0.0
+protobuf==3.20.3
 tqdm==4.64.0
