@@ -240,7 +240,7 @@ def main():
     model_save_path = os.path.join(model_folder, "model_save")
     nforecast.save(path=model_save_path)
     if model_name.lower() in ['timesnet', 'fedformer']:
-        model_ckpt = [i for i in os.listdir(model_save_path) if model_name.lower()+'ckpt' in i][0]
+        model_ckpt = [i for i in os.listdir(model_save_path) if 'ckpt' in i and model_name.lower() in i][0]
         new_model_ckpt = model_ckpt.replace(f'{model_name.lower()}',f'auto{model_name.lower()}')
         os.rename(os.path.join(model_save_path,model_ckpt), os.path.join(model_save_path,new_model_ckpt))
     nforecast_load = NeuralForecast.load(os.path.join(model_folder, "model_save"))
